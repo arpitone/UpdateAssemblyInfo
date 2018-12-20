@@ -1,17 +1,17 @@
 {
-  "id": "406f4a5c-0823-4881-87cd-008b5aa90bc5",
-  "name": "update-assembly-info",
-  "friendlyName": "Update Assembly Info",
-  "description": "Update assembly info of one or multiple projects",
-  "helpMarkDown": "Having Problems? Please [create an issue on our Github](https://github.com/BoolBySigma/UpdateAssemblyInfo/issues) and we will try to help you.",
+  "id": "1de87e77-17e5-4410-8b70-6965e966e063",
+  "name": "assembly-versioning",
+  "friendlyName": "Assembly Versioning",
+  "description": "Assembly Versioning for one or multiple projects",
+  "helpMarkDown": "Source code: https://github.com/arpitone/UpdateAssemblyInfo Forked from: https://github.com/BoolBySigma/UpdateAssemblyInfo",
   "category": "Utility",
-  "author": "Bool (by Sigma)",
+  "author": "Arpit Khandelwal",
   "version": {
-    "Major": 0,
+    "Major": 3,
     "Minor": 0,
-    "Patch": 1
+    "Patch": 0
   },
-  "instanceNameFormat": "Update Assembly: $(assemblyInfoFiles)",
+  "instanceNameFormat": "Assembly Versioning",
   "groups": [
     {
       "name": "fileVersion",
@@ -46,6 +46,15 @@
       "required": false,
       "helpMarkDown": "Adds attribute to assembly info file if it is missing. If the attribute is not specified in this task it will not be added."
     },
+    {
+      "name": "assemblyInfoFilesToExclude",
+      "type": "string",
+      "label": "Assembly Info Files to Exclude",
+      "defaultValue": "",
+      "required": false,
+      "helpMarkDown": "Absolute paths of all files, separated by semi-colon, that need to be excluded from being automatically versioned. Variables can be used, eg. `$(Build.SourcesDirectory)`. Example `$(Build.SourcesDirectory)\\Home\\AssemblyInfo.cs;$(Build.SourcesDirectory)\\Accounts\\AssemblyInfo.cs`"
+    },
+
     {
       "name": "description",
       "type": "string",
@@ -106,7 +115,7 @@
       "name": "informationalVersion",
       "type": "string",
       "label": "Informational Version",
-      "defaultValue": "$(Assembly.FileVersion)",
+      "defaultValue": "$(Build.BuildNumber) - $(Build.SourceVersion)",
       "required": false,
       "helpMarkDown": "Left blank, the value is not updated. Variables can be used."
     },

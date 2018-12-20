@@ -1,9 +1,9 @@
 {
     "manifestVersion": 1,
-    "id": "update-assembly-info",
-    "name": "Update Assembly Info",
-    "version": "0.0.1",
-    "publisher": "bool",
+    "id": "assembly-versioning",
+    "name": "Assembly Versioning",
+    "version": "5.0.0",
+    "publisher": "ArpitKhandelwal",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"

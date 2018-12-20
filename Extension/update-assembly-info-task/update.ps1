@@ -194,7 +194,7 @@ function Expand-DateVariables {
     $matches = [regex]::Matches($value, $variableFormat)
 
     $matches | ForEach-Object {
-        if ($_.Success) {            
+        if ($_.Success) {
             $variable = $_.Groups[1].Value
             Write-VstsTaskDebug -Message "variable: $variable"
             $dateFormat = $_.Groups[2].Value
@@ -286,7 +286,7 @@ function Block-NonNumericParameter {
             Write-VstsTaskError -Message "Invalid value for `'$displayName`'. `'$value`' is not a numerical value."
             $script:errors += 1
         }
-    }	
+    }
 }
 
 function Set-NullIfEmpty {
@@ -378,7 +378,7 @@ function Test-BuildNumberRevisionVariableUsed {
             return $true
         }
     }
-    
+
     Write-VstsTaskDebug -Message "no build revision variable"
     return $false
 }
@@ -388,7 +388,7 @@ function Get-BuildNumberRevision {
     )
 
     Write-VstsTaskDebug -Message "Get-BuildNumberRevision"
-    
+
     $accountUri = Get-VstsTaskVariable -Name "System.TeamFoundationCollectionUri"
     $projectId = Get-VstsTaskVariable -Name "System.TeamProjectId"
     $projectUri = $accountUri + $projectId
@@ -404,7 +404,7 @@ function Get-BuildNumberRevision {
     Write-VstsTaskDebug -Message "buildUri: $buildUri"
 
     $build = (Invoke-RestMethod -Uri $buildUri -Method GET -Headers $authHeader)
-        
+
     if (!$build) {
         throw [System.Exception] "Could not find current build with id $buildId"
     }
@@ -422,6 +422,7 @@ function Get-BuildNumberRevision {
 
 try {
     $assemblyInfoFiles = Get-VstsInput -Name assemblyInfoFiles -Require
+    $assemblyInfoFilesToExclude = Get-VstsInput -Name assemblyInfoFilesToExclude
     $script:description = Get-VstsInput -Name description
     $script:configuration = Get-VstsInput -Name configuration
     $script:company = Get-VstsInput -Name company
@@ -452,7 +453,7 @@ try {
     }
 
     $script:fileVersionMajor = Use-Version "File Version Major" "fileVersionMajor" $script:fileVersionMajor
-    
+
     $script:fileVersionMinor = Use-Version "File Version Minor" "fileVersionMinor" $script:fileVersionMinor
 
     $script:fileVersionBuild = Use-Version "File Version Build" "fileVersionBuild" $script:fileVersionBuild
@@ -480,7 +481,7 @@ try {
     $assemblyVersion = Set-VersionNullIfCurrent "assemblyVersion" $assemblyVersion
 
     $script:description = Use-Parameter "Description" "description" $script:description
-    
+
     $script:configuration = Use-Parameter "Configuration" "configuration" $script:configuration
 
     $script:company = Use-Parameter "Company" "company" $script:company
@@ -527,7 +528,7 @@ try {
     Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "Bool.PowerShell.UpdateAssemblyInfo.dll")
 
     $files = @()
-
+    $excludedFiles = @()
     Write-VstsTaskDebug -Message "testing assembly info files path"
     if (Test-Path -LiteralPath $assemblyInfoFiles) {
         Write-VstsTaskDebug -Message "assembly info file path is absolute"
@@ -536,6 +537,15 @@ try {
     else {
         Write-VstsTaskDebug -Message "getting assembly info files based on minimatch"
         $files = Get-ChildItem $assemblyInfoFiles -Recurse | ForEach-Object {$_.FullName}
+
+        if (-not ([string]::IsNullOrEmpty($assemblyInfoFilesToExclude))) {
+            $excludedFiles = $assemblyInfoFilesToExclude.Split(";") | ForEach-Object { Get-ChildItem $_ -Recurse | ForEach-Object {$_.FullName} }
+        }
+    }
+
+    if($excludedFiles) {
+        Write-Output "Excluding $excludedFiles"
+        $files = $files | Where-Object { $_ -notin $excludedFiles}
     }
 
     if ($files) {
@@ -547,7 +557,7 @@ try {
         Write-Output "Updated:"
         $result += $updateResult | ForEach-Object { New-Object PSObject -Property @{File = $_.File; FileVersion = $_.FileVersion; AssemblyVersion = $_.AssemblyVersion } }
         $result | format-table -property File, FileVersion, AssemblyVersion
-		
+
         Write-VstsTaskDebug -Message "exporting variables"
         $firstResult = $result[0]
         Write-VstsTaskDebug -Message "firstResult: $firstResult"
